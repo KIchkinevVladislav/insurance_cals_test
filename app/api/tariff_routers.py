@@ -1,10 +1,12 @@
 import json
+from typing import List
 
 from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException)
 from sqlalchemy.orm import Session
 
 from database.session import get_db
-from database.schemas import StatusResponse
+from database.schemas import StatusResponse, TariffDateSchema
+from database.models import TariffDate
 from app.crud.tariffs import create_tariffs
 
 
@@ -55,6 +57,13 @@ def upload_tarrifs_with_file(
     try: 
         create_tariffs(db, tariffs)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка при загрузки тарифа {e = }")
+        raise HTTPException(status_code=500, detail=f"Ошибка при загрузки тарифа {e}")
 
     return StatusResponse(status="success", message="Тарифы успешно загружены.")
+
+
+@tariff_routers.get("/list", response_model=List[TariffDateSchema])
+def get_list_tariffs(db: Session = Depends(get_db)):
+    tariff_dates = db.query(TariffDate).all()
+
+    return tariff_dates
