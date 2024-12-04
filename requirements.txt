@@ -1,6 +1,10 @@
+fastapi==0.115.6
+uvicorn==0.32.1
 
 SQLAlchemy==2.0.36
 psycopg2-binary==2.9.10
 alembic==1.14.0
+
+python-multipart==0.0.17
 
 environs==11.0.0
