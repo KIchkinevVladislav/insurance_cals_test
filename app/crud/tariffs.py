@@ -6,7 +6,6 @@ from database.models import TariffDate, Tariff
 
 
 def create_tariffs(db: Session, tariffs: dict):
-# нужно ли вовращать информацию, какие установили, какие обновили
     for date_str, tariffs_list in tariffs.items():
         result = db.execute(select(TariffDate).where(TariffDate.date == date_str))
         tariff_date = result.scalar()
@@ -14,9 +13,9 @@ def create_tariffs(db: Session, tariffs: dict):
         if not tariff_date:
             tariff_date = TariffDate(date=date_str)
             db.add(tariff_date)
-        
+            db.flush()
+
         for tariff in tariffs_list:
-            # Проверяем, существует ли тариф с таким же типом груза для данной даты
             existing_tariff = db.execute(
                 select(Tariff).where(
                     Tariff.date_id == tariff_date.id,
@@ -34,4 +33,4 @@ def create_tariffs(db: Session, tariffs: dict):
                 )
                 db.add(new_tariff)
 
-        db.commit()
+    db.commit()
