@@ -12,7 +12,6 @@ engine = create_engine(
     DATABASE_URL,
     future=True,
     echo=True,
-    execution_options={"isolation_level": "AUTOCOMMIT"}
 )
 
 session_local = sessionmaker(bind=engine, expire_on_commit=False)
