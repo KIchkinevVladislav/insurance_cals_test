@@ -5,7 +5,7 @@ from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.session import get_db
-from database.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
+from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from database.models import TariffDate
 from app.crud.tariffs import create_tariffs, get_tariff_date, remove_tariff, update_tariff_in_db
 from app.utils.exceptions import TariffNotFound
