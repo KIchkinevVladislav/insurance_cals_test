@@ -3,7 +3,7 @@ from typing import Callable
 
 from fastapi import HTTPException
 
-from app.utils.exceptions import TariffDateNotFound, TariffNotFound
+from app.utils.exceptions import TariffDateNotFound, TariffNotFound, TariffForCalculateNotFound
 
 
 def handle_tariff_exceptions(func: Callable):
@@ -16,10 +16,15 @@ def handle_tariff_exceptions(func: Callable):
                 status_code=404,
                 detail="На указанную дату тарифов не существует. Вы можете создать новый тариф"
             )
-        except TariffNotFound as e:
+        except TariffNotFound:
             raise HTTPException(
                 status_code=404,
                 detail=f"Тариф с указанным cargo_type на данную дату не найден."
+            )
+        except TariffForCalculateNotFound:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Тариф для расчета не найден. Обратитесь в тех. поддержку."
             )
         except Exception:
             raise HTTPException(

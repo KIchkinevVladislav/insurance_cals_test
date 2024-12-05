@@ -2,10 +2,10 @@ from datetime import date
 from typing import Optional
 
 from sqlalchemy.orm import Session
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, desc
 
 from database.models import TariffDate, Tariff
-from app.utils.exceptions import TariffNotFound, TariffDateNotFound
+from app.utils.exceptions import TariffNotFound, TariffDateNotFound, TariffForCalculateNotFound
 
 
 def get_tariff_date(db: Session, date: date | str) -> Optional[TariffDate]:
@@ -15,7 +15,27 @@ def get_tariff_date(db: Session, date: date | str) -> Optional[TariffDate]:
     return tariff_date
 
 
-def get_tariff(db: Session, date_id: int, cargo_type: str) -> Tariff:
+def get_tariff_date_lte_date(db: Session, date: date | str) -> TariffDate:
+    tariff_date = db.execute(
+        select(TariffDate)
+        .where(TariffDate.date <= date)
+        .order_by(desc(TariffDate.date))
+    ).scalar()
+
+    if not tariff_date:
+        raise TariffDateNotFound
+    
+    return tariff_date   
+
+
+def get_tariff_date(db: Session, date: date | str) -> Optional[TariffDate]:
+    result = db.execute(select(TariffDate).where(TariffDate.date == date))
+    tariff_date = result.scalar()
+
+    return tariff_date
+
+
+def get_tariff(db: Session, date_id: int, cargo_type: str) -> Optional[Tariff]:
     tariff = db.execute(
                 select(Tariff).where(
                     Tariff.date_id == date_id,
@@ -72,10 +92,21 @@ def update_tariff_in_db(db: Session, tariff_date: TariffDate, cargo_type: str, r
     db.commit()
 
 
-def get_tariff_date_or_error(db: Session, date: date | str) -> Optional[TariffDate]:
+def get_tariff_date_or_error(db: Session, date: date | str) -> TariffDate:
     tariff_date = get_tariff_date(db, date)
     
     if not tariff_date:
         raise TariffDateNotFound
     
     return tariff_date
+
+
+def get_tariff_other_or_error(db: Session, date_id: int) -> Tariff:
+    tariff = tariff = db.execute(select(Tariff).where(
+        Tariff.date_id == date_id, 
+        Tariff.cargo_type == "Other")).scalar()
+
+    if not tariff:
+        raise TariffForCalculateNotFound
+    
+    return tariff

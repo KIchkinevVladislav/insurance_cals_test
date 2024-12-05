@@ -4,3 +4,7 @@ class TariffNotFound(Exception):
 
 class TariffDateNotFound(Exception):
     pass
+
+
+class TariffForCalculateNotFound(Exception):
+    pass
