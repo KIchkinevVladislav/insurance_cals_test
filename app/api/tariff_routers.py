@@ -27,8 +27,8 @@ def upload_tariffs(
     
     try: 
         create_tariffs(db, tariffs)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка при загрузки тарифа {e = }")
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Ошибка при загрузки тарифа")
 
     return StatusResponse(status="success", message="Тарифы успешно загружены.")
 
