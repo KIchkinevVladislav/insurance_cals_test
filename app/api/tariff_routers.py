@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from database.session import get_db
 from database.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema
 from database.models import TariffDate
-from app.crud.tariffs import create_tariffs, get_tarrif_date, remove_tariff
+from app.crud.tariffs import create_tariffs, get_tariff_date, remove_tariff
 from app.utils.exceptions import TariffNotFound
 
 
@@ -72,7 +72,7 @@ def get_list_tariffs(db: Session = Depends(get_db)):
 
 @tariff_routers.delete("/", response_model=StatusResponse)
 def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
-    tariff_date = get_tarrif_date(db, request.date)
+    tariff_date = get_tariff_date(db, request.date)
 
     if not tariff_date:
         raise HTTPException(status_code=404, detail="На указанную дату тарифов не существует")
