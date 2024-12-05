@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status,)
+from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status, Query)
 from sqlalchemy.orm import Session
 
 from database.session import get_db
@@ -64,8 +64,21 @@ def upload_tariffs_with_file(
 
 
 @tariff_routers.get("/list", response_model=List[TariffDateSchema])
-def get_list_tariffs(db: Session = Depends(get_db)):
-    tariff_dates = db.query(TariffDate).all()
+def get_list_tariffs(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    order: str = Query("asc", regex="^(asc|desc)$"),
+):
+    query = db.query(TariffDate)
+
+    if order == "asc":
+        query = query.order_by(TariffDate.date.asc())
+    else:
+        query = query.order_by(TariffDate.date.desc())
+
+    offset = (page - 1) * limit
+    tariff_dates = query.offset(offset).limit(limit).all()
 
     return tariff_dates
 
