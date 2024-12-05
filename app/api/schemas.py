@@ -31,6 +31,10 @@ class TariffRequestUpdateSchema(TariffRequestSchema):
     rate: float
 
 
+class InsuranceRequestSchema(TariffRequestSchema):
+    cost: float
+
+
 class StatusResponse(BaseModel):
     status: str
     message: str

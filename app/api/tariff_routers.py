@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 from database.session import get_db
 from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from database.models import TariffDate
-from app.crud.tariffs import create_tariffs, get_tariff_date, remove_tariff, update_tariff_in_db
-from app.utils.exceptions import TariffNotFound
-
+from app.crud.tariffs import create_tariffs, get_tariff_date_or_error, remove_tariff, update_tariff_in_db
+from app.utils.exceptions import TariffNotFound, TariffDateNotFound
+from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
+    
 
 tariff_routers = APIRouter()
 
@@ -84,34 +85,18 @@ def get_list_tariffs(
 
 
 @tariff_routers.delete("/", response_model=StatusResponse)
+@handle_tariff_exceptions
 def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
-    tariff_date = get_tariff_date(db, request.date)
-
-    if not tariff_date:
-        raise HTTPException(status_code=404, detail="На указанную дату тарифов не существует")
-    
-    try:
-        remove_tariff(db, tariff_date, request.cargo_type)
-    except TariffNotFound:
-        raise HTTPException(status_code=404, detail=f"Тариф c cargo_type = {request.cargo_type} на данную дату не найден")
-    except Exception:
-        raise HTTPException(status_code=500, detail=f"Ошибка при удалении тарифа")
+    tariff_date = get_tariff_date_or_error(db, request.date)
+    remove_tariff(db, tariff_date, request.cargo_type)
     
     return StatusResponse(status="success", message="Тариф успешно удален.")
 
 
 @tariff_routers.put("/", response_model=StatusResponse)
+@handle_tariff_exceptions
 def update_tariff(request: TariffRequestUpdateSchema, db: Session = Depends(get_db)):
-    tariff_date = get_tariff_date(db, request.date)
-
-    if not tariff_date:
-        raise HTTPException(status_code=404, detail="На указанную дату тарифов не существует. Вы можете создать новый тариф")
-    
-    try:
-       update_tariff_in_db(db, tariff_date, request.cargo_type, request.rate)
-    except TariffNotFound:
-        raise HTTPException(status_code=404, detail=f"Тариф c cargo_type = {request.cargo_type} на данную дату не найден. Загрузите этот тариф")
-    except Exception:
-        raise HTTPException(status_code=500, detail=f"Ошибка при обновлении тарифа")
+    tariff_date = get_tariff_date_or_error(db, request.date)
+    update_tariff_in_db(db, tariff_date, request.cargo_type, request.rate)
     
     return StatusResponse(status="success", message="Тариф успешно обновлен.")

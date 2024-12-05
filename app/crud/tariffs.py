@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, delete
 
 from database.models import TariffDate, Tariff
-from app.utils.exceptions import TariffNotFound
+from app.utils.exceptions import TariffNotFound, TariffDateNotFound
 
 
 def get_tariff_date(db: Session, date: date | str) -> Optional[TariffDate]:
@@ -70,3 +70,12 @@ def update_tariff_in_db(db: Session, tariff_date: TariffDate, cargo_type: str, r
     tariff.rate = rate
 
     db.commit()
+
+
+def get_tariff_date_or_error(db: Session, date: date | str) -> Optional[TariffDate]:
+    tariff_date = get_tariff_date(db, date)
+    
+    if not tariff_date:
+        raise TariffDateNotFound
+    
+    return tariff_date
