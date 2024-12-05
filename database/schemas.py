@@ -25,6 +25,12 @@ class TariffRequestSchema(BaseModel):
     cargo_type: str
 
 
+class TariffRequestUpdateSchema(TariffRequestSchema):
+    date: date
+    cargo_type: str
+    rate: float
+
+
 class StatusResponse(BaseModel):
     status: str
     message: str

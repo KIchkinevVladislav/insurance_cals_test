@@ -25,6 +25,7 @@ def get_tariff(db: Session, date_id: int, cargo_type: str) -> Tariff:
     
     return tariff
 
+
 def create_tariffs(db: Session, tariffs: dict):
     for date_str, tariffs_list in tariffs.items():
         tariff_date = get_tariff_date(db, date_str)
@@ -57,4 +58,15 @@ def remove_tariff(db: Session, tariff_date: TariffDate, cargo_type: str):
         raise TariffNotFound
 
     db.execute(delete(Tariff).where(Tariff.id == tariff.id))
+    db.commit()
+
+
+def update_tariff_in_db(db: Session, tariff_date: TariffDate, cargo_type: str, rate: float):
+    tariff = get_tariff(db, tariff_date.id, cargo_type)
+
+    if not tariff:
+        raise TariffNotFound
+    
+    tariff.rate = rate
+
     db.commit()

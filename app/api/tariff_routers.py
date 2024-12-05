@@ -5,9 +5,9 @@ from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.session import get_db
-from database.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema
+from database.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from database.models import TariffDate
-from app.crud.tariffs import create_tariffs, get_tariff_date, remove_tariff
+from app.crud.tariffs import create_tariffs, get_tariff_date, remove_tariff, update_tariff_in_db
 from app.utils.exceptions import TariffNotFound
 
 
@@ -15,7 +15,7 @@ tariff_routers = APIRouter()
 
 
 @tariff_routers.post("/upload", status_code=status.HTTP_201_CREATED, response_model=StatusResponse)
-def upload_tarrifs(
+def upload_tariffs(
     tariffs: dict,
     db: Session = Depends(get_db)
 ):
@@ -34,7 +34,7 @@ def upload_tarrifs(
 
 
 @tariff_routers.post("/upload_with_file", status_code=status.HTTP_201_CREATED, response_model=StatusResponse)
-def upload_tarrifs_with_file(
+def upload_tariffs_with_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -81,7 +81,24 @@ def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
         remove_tariff(db, tariff_date, request.cargo_type)
     except TariffNotFound:
         raise HTTPException(status_code=404, detail=f"Тариф c cargo_type = {request.cargo_type} на данную дату не найден")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка при удалении тарифа {e = }")
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Ошибка при удалении тарифа")
     
     return StatusResponse(status="success", message="Тариф успешно удален.")
+
+
+@tariff_routers.put("/", response_model=StatusResponse)
+def update_tariff(request: TariffRequestUpdateSchema, db: Session = Depends(get_db)):
+    tariff_date = get_tariff_date(db, request.date)
+
+    if not tariff_date:
+        raise HTTPException(status_code=404, detail="На указанную дату тарифов не существует. Вы можете создать новый тариф")
+    
+    try:
+       update_tariff_in_db(db, tariff_date, request.cargo_type, request.rate)
+    except TariffNotFound:
+        raise HTTPException(status_code=404, detail=f"Тариф c cargo_type = {request.cargo_type} на данную дату не найден. Загрузите этот тариф")
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Ошибка при обновлении тарифа")
+    
+    return StatusResponse(status="success", message="Тариф успешно обновлен.")
