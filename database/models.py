@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, String, Float, Integer
+from sqlalchemy import Column, Date, ForeignKey, String, Float, Integer
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 
 from .base import Base
 
@@ -23,14 +22,3 @@ class Tariff(Base):
     date_id = Column(Integer, ForeignKey("tariff_dates.id", ondelete="CASCADE"), nullable=False)
 
     tariff_date = relationship("TariffDate", back_populates="tariffs")
-
-
-class CalculationResult(Base):
-    __tablename__ = "calculation_results"
-
-    id = Column(Integer, primary_key=True, index=True)
-    date_calculation = Column(DateTime, nullable=False, default=func.now())
-    cargo_type = Column(String, nullable=False)
-    initial_cost = Column(Float, nullable=False)
-    rate = Column(Float, nullable=False)
-    calculated_cost = Column(Float, nullable=False)
