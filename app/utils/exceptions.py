@@ -1,0 +1,2 @@
+class TariffNotFound(Exception):
+    pass

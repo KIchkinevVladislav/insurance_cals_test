@@ -20,6 +20,11 @@ class TariffDateSchema(BaseModel):
         orm_mode = True
 
 
+class TariffRequestSchema(BaseModel):
+    date: date
+    cargo_type: str
+
+
 class StatusResponse(BaseModel):
     status: str
     message: str
