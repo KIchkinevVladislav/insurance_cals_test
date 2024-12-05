@@ -66,19 +66,19 @@ def upload_tariffs_with_file(
 @tariff_routers.get("/list", response_model=List[TariffDateSchema])
 def get_list_tariffs(
     db: Session = Depends(get_db),
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
-    order: str = Query("asc", regex="^(asc|desc)$"),
+    page: int=Query(1, ge=1, description="Номер страницы."),
+    size: int=Query(10, le=100, description="Количество записей на странице"),
+    sort_desc: bool=Query(False, description="Сортировка в обратном порядке")
 ):
     query = db.query(TariffDate)
 
-    if order == "asc":
+    if not sort_desc:
         query = query.order_by(TariffDate.date.asc())
     else:
         query = query.order_by(TariffDate.date.desc())
 
-    offset = (page - 1) * limit
-    tariff_dates = query.offset(offset).limit(limit).all()
+    offset = (page - 1) * size
+    tariff_dates = query.offset(offset).limit(size).all()
 
     return tariff_dates
 
