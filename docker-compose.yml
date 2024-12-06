@@ -1,0 +1,59 @@
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.8.0
+    container_name: "zookeeper"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+           
+  kafka:
+    image: confluentinc/cp-kafka:7.8.0
+    container_name: "kafka"
+    depends_on:
+      - zookeeper
+    restart: on-failure
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  postgres:
+    container_name: "postgres"
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    command: >
+      sh -c "
+      docker-entrypoint.sh postgres &
+      sleep 10 &&
+      psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "$$POSTGRES_DB" <<-EOSQL
+          CREATE DATABASE postgres_test;
+      EOSQL
+      "  
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  cals_app:
+    container_name: "cals_app"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - kafka
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+volumes:
+  db-data:
