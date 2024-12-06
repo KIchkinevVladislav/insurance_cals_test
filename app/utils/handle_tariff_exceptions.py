@@ -14,7 +14,7 @@ def handle_tariff_exceptions(func: Callable):
         except TariffDateNotFound:
             raise HTTPException(
                 status_code=404,
-                detail="На указанную дату тарифов не существует. Вы можете создать новый тариф"
+                detail="На указанную дату тарифов не существует."
             )
         except TariffNotFound:
             raise HTTPException(
