@@ -1,6 +1,6 @@
 import json
 import logging
-import datetime
+from datetime import datetime, tzinfo, timezone
 from typing import List
 
 from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status, Query)
@@ -8,17 +8,17 @@ from sqlalchemy.orm import Session
 from kafka import KafkaProducer
 
 from database.session import get_db
-from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from database.models import TariffDate
+from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from app.crud.tariffs import create_tariffs, get_tariff_date_or_error, remove_tariff, update_tariff_in_db
 from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
 from app.config import KAFKA_HOST, KAFKA_PORT
 
 
 producer = KafkaProducer(
-    bootstrap_servers=[f"{KAFKA_HOST}:{KAFKA_PORT}"],
+    bootstrap_servers="kafka:29092",
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-     batch_size=16384,
+    batch_size=16384,
     linger_ms=5
 )
 
@@ -106,11 +106,10 @@ def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
     log_data = {
         "action": "delete_tariff",
         "details": {
-            "tariff_date": request.date,
+            "tariff_date": request.date.isoformat(),
             "cargo_type": request.cargo_type
         },
-        "time": datetime.datetime.now().isoformat()
-
+        "time": datetime.now(timezone.utc).isoformat()
     }
 
     try:
@@ -127,15 +126,15 @@ def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
 def update_tariff(request: TariffRequestUpdateSchema, db: Session = Depends(get_db)):
     tariff_date = get_tariff_date_or_error(db, request.date)
     update_tariff_in_db(db, tariff_date, request.cargo_type, request.rate)
-
+    
     log_data = {
         "action": "update_tariff",
         "details": {
-            "tariff_date": request.date,
+            "tariff_date": request.date.isoformat(),
             "cargo_type": request.cargo_type,
-            "rate": request.rate
+            "rate": str(request.rate)
         },
-        "time": datetime.datetime.now().isoformat()
+        "time": datetime.now(timezone.utc).isoformat()
     }
 
     try:

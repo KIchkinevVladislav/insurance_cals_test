@@ -14,7 +14,7 @@ from database.config import (DB_TEST_HOST, DB_TEST_NAME, DB_TEST_PASS, DB_TEST_P
 from database.base import Base
 from database.session import get_db
 
-from app.main import app
+from main import app
 
 import logging
 from sqlalchemy import create_engine
