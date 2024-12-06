@@ -1,10 +1,11 @@
-from fastapi import (APIRouter, Depends)
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database.session import get_db
 from app.api.schemas import InsuranceRequestSchema
-from app.crud.tariffs import get_tariff_date_lte_date, get_tariff, get_tariff_other_or_error
+from app.crud.tariffs import (get_tariff, get_tariff_date_lte_date,
+                              get_tariff_other_or_error)
 from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
+from database.session import get_db
 
 insurance_routers = APIRouter()
 

@@ -1,19 +1,21 @@
 import json
 import logging
-from datetime import datetime, tzinfo, timezone
+from datetime import datetime, timezone, tzinfo
 from typing import List
 
-from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status, Query)
-from sqlalchemy.orm import Session
+from fastapi import (APIRouter, Depends, File, HTTPException, Query,
+                     UploadFile, status)
 from kafka import KafkaProducer
+from sqlalchemy.orm import Session
 
-from database.session import get_db
-from database.models import TariffDate
-from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
-from app.crud.tariffs import create_tariffs, get_tariff_date_or_error, remove_tariff, update_tariff_in_db
-from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
+from app.api.schemas import (StatusResponse, TariffDateSchema,
+                             TariffRequestSchema, TariffRequestUpdateSchema)
 from app.config import KAFKA_HOST, KAFKA_PORT
-
+from app.crud.tariffs import (create_tariffs, get_tariff_date_or_error,
+                              remove_tariff, update_tariff_in_db)
+from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
+from database.models import TariffDate
+from database.session import get_db
 
 producer = KafkaProducer(
     bootstrap_servers=f"{KAFKA_HOST}:{KAFKA_PORT}",

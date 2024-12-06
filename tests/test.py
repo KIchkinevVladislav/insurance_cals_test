@@ -1,28 +1,20 @@
-import unittest
-from time import sleep
 import json
+import logging
+import unittest
 from datetime import date
+from time import sleep
 
-from sqlalchemy import create_engine
 from fastapi.testclient import TestClient
+from psycopg2 import connect
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from psycopg2 import connect
 
-from database.config import (DB_TEST_HOST, DB_TEST_NAME, DB_TEST_PASS, DB_TEST_PORT,
-                    DB_TEST_USER)
 from database.base import Base
+from database.config import (DB_TEST_HOST, DB_TEST_NAME, DB_TEST_PASS,
+                             DB_TEST_PORT, DB_TEST_USER)
 from database.session import get_db
-
 from main import app
-
-import logging
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
-import unittest
-from time import sleep
-
 
 DATABASE_URL_TEST = f"postgresql://{DB_TEST_USER}:{DB_TEST_PASS}@{DB_TEST_HOST}:{DB_TEST_PORT}/{DB_TEST_NAME}"
 

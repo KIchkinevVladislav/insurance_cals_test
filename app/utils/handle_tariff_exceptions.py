@@ -3,7 +3,8 @@ from typing import Callable
 
 from fastapi import HTTPException
 
-from app.utils.exceptions import TariffDateNotFound, TariffNotFound, TariffForCalculateNotFound
+from app.utils.exceptions import (TariffDateNotFound,
+                                  TariffForCalculateNotFound, TariffNotFound)
 
 
 def handle_tariff_exceptions(func: Callable):

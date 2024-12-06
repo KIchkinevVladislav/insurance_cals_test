@@ -1,8 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.api.tariff_routers import tariff_routers
 from app.api.insurance_routers import insurance_routers
+from app.api.tariff_routers import tariff_routers
 
 app = FastAPI()
 

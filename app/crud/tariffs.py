@@ -1,11 +1,12 @@
 from datetime import date
 from typing import Optional
 
+from sqlalchemy import delete, desc, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, delete, desc
 
-from database.models import TariffDate, Tariff
-from app.utils.exceptions import TariffNotFound, TariffDateNotFound, TariffForCalculateNotFound
+from app.utils.exceptions import (TariffDateNotFound,
+                                  TariffForCalculateNotFound, TariffNotFound)
+from database.models import Tariff, TariffDate
 
 
 def get_tariff_date(db: Session, date: date | str) -> Optional[TariffDate]:
