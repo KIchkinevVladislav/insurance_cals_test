@@ -16,7 +16,7 @@ from app.config import KAFKA_HOST, KAFKA_PORT
 
 
 producer = KafkaProducer(
-    bootstrap_servers="kafka:29092",
+    bootstrap_servers=f"{KAFKA_HOST}:{KAFKA_PORT}",
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
     batch_size=16384,
     linger_ms=5
