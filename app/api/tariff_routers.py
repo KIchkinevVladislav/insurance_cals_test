@@ -1,15 +1,29 @@
 import json
+import logging
+import datetime
 from typing import List
 
 from fastapi import (APIRouter, Depends, UploadFile, File, HTTPException, status, Query)
 from sqlalchemy.orm import Session
+from kafka import KafkaProducer
 
 from database.session import get_db
 from app.api.schemas import StatusResponse, TariffDateSchema, TariffRequestSchema, TariffRequestUpdateSchema
 from database.models import TariffDate
 from app.crud.tariffs import create_tariffs, get_tariff_date_or_error, remove_tariff, update_tariff_in_db
 from app.utils.handle_tariff_exceptions import handle_tariff_exceptions
-    
+from app.config import KAFKA_HOST, KAFKA_PORT
+
+
+producer = KafkaProducer(
+    bootstrap_servers=[f"{KAFKA_HOST}:{KAFKA_PORT}"],
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+     batch_size=16384,
+    linger_ms=5
+)
+
+logger = logging.getLogger(__name__)
+
 
 tariff_routers = APIRouter()
 
@@ -88,7 +102,23 @@ def get_list_tariffs(
 def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
     tariff_date = get_tariff_date_or_error(db, request.date)
     remove_tariff(db, tariff_date, request.cargo_type)
-    
+
+    log_data = {
+        "action": "delete_tariff",
+        "details": {
+            "tariff_date": request.date,
+            "cargo_type": request.cargo_type
+        },
+        "time": datetime.datetime.now().isoformat()
+
+    }
+
+    try:
+        producer.send("tariff_changes", log_data)
+        logger.info(f"Tariff update log sent to Kafka: {log_data}")
+    except Exception as e:
+        logger.error(f"Failed to send log to Kafka: {e}")
+
     return StatusResponse(status="success", message="Тариф успешно удален.")
 
 
@@ -97,5 +127,21 @@ def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
 def update_tariff(request: TariffRequestUpdateSchema, db: Session = Depends(get_db)):
     tariff_date = get_tariff_date_or_error(db, request.date)
     update_tariff_in_db(db, tariff_date, request.cargo_type, request.rate)
-    
+
+    log_data = {
+        "action": "update_tariff",
+        "details": {
+            "tariff_date": request.date,
+            "cargo_type": request.cargo_type,
+            "rate": request.rate
+        },
+        "time": datetime.datetime.now().isoformat()
+    }
+
+    try:
+        producer.send("tariff_changes", log_data)
+        logger.info(f"Tariff update log sent to Kafka: {log_data}")
+    except Exception as e:
+        logger.error(f"Failed to send log to Kafka: {e}")
+
     return StatusResponse(status="success", message="Тариф успешно обновлен.")

@@ -10,3 +10,4 @@ python-multipart==0.0.17
 environs==11.0.0
 
 httpx==0.28.0
+kafka-python==2.0.2
