@@ -169,7 +169,7 @@ class TestUpdateTariffRouter(TestBase):
             "cargo_type": "Glass",
             "rate": 1.50
         }
-        response = self.client.put("tariffs/", json=update_data)
+        response = self.client.patch("tariffs/", json=update_data)
 
         assert response.status_code == 200
         assert response.json() == {"status": "success", "message": "Тариф успешно обновлен."}
@@ -186,7 +186,7 @@ class TestUpdateTariffRouter(TestBase):
             "cargo_type": "Cargo",
             "rate": 1.5
         }
-        response = self.client.put("tariffs/", json=update_data)
+        response = self.client.patch("tariffs/", json=update_data)
 
         assert response.status_code == 404
         assert response.json() == {"detail": "Тариф с указанным cargo_type на данную дату не найден."}
@@ -198,7 +198,7 @@ class TestUpdateTariffRouter(TestBase):
             "cargo_type": "Cargo",
             "rate": 1.5
         }
-        response = self.client.put("tariffs/", json=update_data)
+        response = self.client.patch("tariffs/", json=update_data)
 
         assert response.status_code == 404
         assert response.json() == {"detail": "На указанную дату тарифов не существует."}

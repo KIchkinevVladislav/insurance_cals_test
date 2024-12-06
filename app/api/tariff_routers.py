@@ -123,7 +123,7 @@ def delete_tariff(request: TariffRequestSchema, db: Session = Depends(get_db)):
     return StatusResponse(status="success", message="Тариф успешно удален.")
 
 
-@tariff_routers.put("/", response_model=StatusResponse)
+@tariff_routers.patch("/", response_model=StatusResponse)
 @handle_tariff_exceptions
 def update_tariff(request: TariffRequestUpdateSchema, db: Session = Depends(get_db)):
     tariff_date = get_tariff_date_or_error(db, request.date)
